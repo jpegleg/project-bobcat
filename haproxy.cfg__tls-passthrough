@@ -1,0 +1,17 @@
+global
+    maxconn 1024
+    user _haproxy
+    group _haproxy
+    daemon
+  defaults
+    mode tcp
+    option tcplog
+    timeout connect 9s
+    timeout client 9s
+    timeout server 10s
+  listen http-in
+    bind *:443
+    mode tcp
+    balance roundrobin
+    server node1 192.168.1.X:3443 maxconn 1023 check port 3443
+    server node2 192.168.1.Y:3443 maxconn 1023 check port 3443
