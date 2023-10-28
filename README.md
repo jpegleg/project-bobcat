@@ -14,8 +14,18 @@ We'll apply maximum FreeBSD default MAC on the user we run the morpho-web-lt pro
 As of current (10/28/23) FreeBSD can leverage rustup, while OpenBSD cannot. While I have
 been able to get some rust compiling on OpenBSD, it is currently not sufficient for morpho services.
 
-The OpenBSD node HAProxy is not as high performance as Actix, but still performs great and is sufficient for project-bobcat.
-The two main benefits of the HAProxy usage is solid mTLS configuration and load balancing between
-the two morpho-web-lt FreeBSD nodes. While we could replace HAProxy with a rust load balancer, the
-HAProxy mTLS configuration is currently supperior to stable rust mTLS designs.
+OpenBSD is the gateway loadblancer with TCP passthrough roundrobin with TCP healthchecks to the morpho-web-lt compute nodes.
+
+FreeBSD is the compute node running the morpho-web-lt application as a low privileged user.
+
+The configurations are very simple.
+
+The OS installation is described here:
+```
+FreeBSD (13.2) - following the installer and add a new user, enabling all of the security options (MAC) for that user to restrict it
+OpenBSD (7.4) - default installer options
+```
+
+
+
 
