@@ -22,8 +22,8 @@ The configurations are very simple.
 
 The OS installation is described here:
 ```
-FreeBSD (13.2) - following the installer (-games, no gui) and add a new user, enabling all of the security options (MAC) for that user to restrict it
-OpenBSD (7.4) - default installer options (-games, no gui)
+FreeBSD (13.2) - following the installer and add a new user, enabling all of the security options (MAC) for that user to restrict it
+OpenBSD (7.4) - default installer options (-games for sets, no gui)
 ```
 
 The scripts ending with "packages.sh" are adding vim and a few packages without adding a compiler.
