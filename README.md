@@ -22,8 +22,8 @@ The configurations are very simple.
 
 The OS installation is described here:
 ```
-FreeBSD (13.2) - following the installer and add a new user, enabling all of the security options (MAC) for that user to restrict it
-OpenBSD (7.4) - default installer options (-games for sets, no gui)
+FreeBSD (13.2) - following the installer and add powerd, ntpd, a new user crab, enabling all of the hardening options and MAC for that user to restrict crab
+OpenBSD (7.4) - default installer options (exclude the games sets, no gui)
 ```
 
 The scripts ending with "packages.sh" are adding vim and a few packages without adding a compiler.
@@ -55,8 +55,18 @@ web content for morpho to serve up there, or in another location
 as from new functions added to morpho.
 
 The `/etc/pf.conf` is overwritten on both lb and compute nodes with
-a custom config and reloaded. This is performed by `fire.sh` or
-can be done normally with `pfctl -f /etc/pf.conf`.
+a custom config and reloaded. This can be performed by root running 
+the script `fire.sh` or can be done normally with `pfctl -f /etc/pf.conf`.
+
+The `fire.sh` script is an odd little thing that deploys the pf.conf files
+and enables pf on freebsd by concatenating a file to the rc.conf... you
+may prefer to simply edit the `/etc/rc,conf` to enable pf manually.
+
+The project bobcat `morpho` wrapper is a barbaric script which executes 
+the rust binary as the crab user. It uses `kill -9` and sends the morpho 
+server log to STDOUT. This can be left to go into STDOUT oblivion or 
+redirected to a desired log location. The morpho-web-lt default build 
+has no transsaction logging, just a start message.
 
 
 
