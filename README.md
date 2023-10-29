@@ -22,9 +22,43 @@ The configurations are very simple.
 
 The OS installation is described here:
 ```
-FreeBSD (13.2) - following the installer and add a new user, enabling all of the security options (MAC) for that user to restrict it
-OpenBSD (7.4) - default installer options
+FreeBSD (13.2) - following the installer (-games, no gui) and add a new user, enabling all of the security options (MAC) for that user to restrict it
+OpenBSD (7.4) - default installer options (-games, no gui)
 ```
+
+The scripts ending with "packages.sh" are adding vim and a few packages without adding a compiler.
+The OpenBSD build only runs HAProxy from the package manager, so no compiler is needed at all.
+The FreeBSD build will need binaries deployed to it. We can use cargo cross to build binaries
+for the ARM or x86 compute nodes on a separate system.
+
+The OpenBSD server is a single root process, that is mostly it. Round robin TCP.
+
+The FreeBSD server is a single locked down process with high performance async IO with tokio actix and ZFS file systems.
+
+The morpho wrapper can be used with init, cron, or manual.
+
+```
+/usr/local/sbin/morpho start
+```
+
+Additionally, the required files must
+be in place:
+
+```
+/home/crab/cert.pem
+/home/crab/privkey.pem
+/home/crab/static/index.html
+```
+
+Within `/home/crab/static` is the web root. Place all the exposed
+web content for morpho to serve up there, or in another location
+as from new functions added to morpho.
+
+The `/etc/pf.conf` is overwritten on both lb and compute nodes with
+a custom config and reloaded. This is performed by `fire.sh` or
+can be done normally with `pfctl -f /etc/pf.conf`.
+
+
 
 
 
