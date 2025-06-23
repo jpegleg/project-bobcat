@@ -1,6 +1,7 @@
-se std::path::Path;
+use std::path::Path;
 use std::fs::File;
 use std::io::Read;
+use std::env;
 
 use actix_web::{
     App, HttpRequest, HttpResponse, HttpServer, http::header::ContentType, middleware, web,
@@ -56,31 +57,32 @@ async fn main() -> eyre::Result<()> {
         })
         .unwrap();
 
+
+    let certpath = "/opt/morpho/cert.pem";
+    let keypath = "/opt/morpho/key.pem";
+
+    unveil(certpath, "r")
+      .or_else(unveil::Error::ignore_platform)
+      .unwrap();
+    unveil(keypath, "r")
+      .or_else(unveil::Error::ignore_platform)
+      .unwrap();
+
     file_watcher
-      .watch(Path::new("cert.pem"), RecursiveMode::NonRecursive)
+      .watch(Path::new("/opt/morpho/cert.pem"), RecursiveMode::NonRecursive)
       .unwrap();
     file_watcher
-      .watch(Path::new("key.pem"), RecursiveMode::NonRecursive)
+      .watch(Path::new("/opt/morpho/key.pem"), RecursiveMode::NonRecursive)
       .unwrap();
 
     log::info!("starting morphobsd with libressl on 3443");
 
     loop {
 
-        let certpath = "./cert.pem";
-        let keypath = "./key.pem";
-
-        unveil(certpath, "r")
-          .or_else(unveil::Error::ignore_platform)
-          .unwrap();
-        unveil(keypath, "r")
-          .or_else(unveil::Error::ignore_platform)
-          .unwrap();
-
         let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
 
         builder.set_private_key(&load_encrypted_private_key()).unwrap();
-        builder.set_certificate_chain_file("cert.pem").unwrap();
+        builder.set_certificate_chain_file("/opt/morpho/cert.pem").unwrap();
 
         let mut server = HttpServer::new(|| {
             App::new()
@@ -113,20 +115,17 @@ async fn main() -> eyre::Result<()> {
 }
 
 fn load_encrypted_private_key() -> PKey<Private> {
-    let certpath = "./cert.pem";
-    let keypath = "./key.pem";
+    let keypath = "/opt/morpho/key.pem";
 
-    unveil(certpath, "r")
-      .or_else(unveil::Error::ignore_platform)
-      .unwrap();
     unveil(keypath, "r")
       .or_else(unveil::Error::ignore_platform)
       .unwrap();
 
-
-    let mut file = File::open("key.pem").unwrap();
+    let mut file = File::open("/opt/morpho/key.pem").unwrap();
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer).expect("Failed to read file");
 
-    PKey::private_key_from_pem_passphrase(&buffer, b"password").unwrap()
+    let binding = env::var("MORPHOP").expect("failed to read MORPHOP");
+    let pem_password = binding.as_bytes();
+    PKey::private_key_from_pem_passphrase(&buffer, pem_password).unwrap()
 }
