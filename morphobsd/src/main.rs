@@ -15,7 +15,10 @@ use openssl::{
 use tokio::sync::mpsc;
 use unveil::unveil;
 use pledge::pledge_promises;
+use chrono::prelude::*;
 
+use actix_web_lab::middleware::RedirectHttps;
+use actix_web_lab::header::StrictTransportSecurity;
 
 #[derive(Debug)]
 struct TlsUpdated;
@@ -75,7 +78,8 @@ async fn main() -> eyre::Result<()> {
       .watch(Path::new("/opt/morpho/key.pem"), RecursiveMode::NonRecursive)
       .unwrap();
 
-    log::info!("starting morphobsd with libressl on 3443");
+    let readi: DateTime<Utc> = Utc::now();
+    log::info!("morphobsd initialized at {} >>> starting HTTPS server on port 3443 using openssl (libressl)", readi);
 
     loop {
 
@@ -86,8 +90,13 @@ async fn main() -> eyre::Result<()> {
 
         let mut server = HttpServer::new(|| {
             App::new()
-                .service(web::resource("/").to(index))
-                .wrap(middleware::Logger::default())
+              .wrap(RedirectHttps::default())
+              .wrap(RedirectHttps::with_hsts(StrictTransportSecurity::recommended()))
+              .wrap(middleware::DefaultHeaders::new().add(("x-content-type-options", "nosniff")))
+              .wrap(middleware::DefaultHeaders::new().add(("x-frame-options", "SAMEORIGIN")))
+              .wrap(middleware::DefaultHeaders::new().add(("x-xss-protection", "1; mode=block")))
+              .wrap(middleware::Logger::new("%{txid}e %a -> HTTP %s %r size: %b server-time: %T %{Referer}i %{User-Agent}i"))
+              .service(web::resource("/").to(index))
         })
         .workers(2)
         .bind_openssl("0.0.0.0:3443", builder)?
