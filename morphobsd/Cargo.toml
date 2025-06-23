@@ -20,3 +20,4 @@ eyre = { version = "0.6", default-features = false, features = ["auto-install", 
 color-eyre = "0.6"
 notify = "8"
 tokio = { version = "1.24.2", features = ["time", "rt", "macros"] }
+chrono = "0.4"
