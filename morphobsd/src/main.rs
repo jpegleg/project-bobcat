@@ -1,15 +1,20 @@
-use std::path::Path;
+se std::path::Path;
+use std::fs::File;
+use std::io::Read;
 
 use actix_web::{
     App, HttpRequest, HttpResponse, HttpServer, http::header::ContentType, middleware, web,
 };
 use log::debug;
 use notify::{Event, RecursiveMode, Watcher as _};
-use rustls::{
-    ServerConfig,
-    pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject},
+use openssl::{
+    pkey::{PKey, Private},
+    ssl::{SslAcceptor, SslMethod},
 };
 use tokio::sync::mpsc;
+use unveil::unveil;
+use pledge::pledge_promises;
+
 
 #[derive(Debug)]
 struct TlsUpdated;
@@ -28,18 +33,14 @@ async fn index(req: HttpRequest) -> HttpResponse {
 async fn main() -> eyre::Result<()> {
 
     pledge_promises![Stdio Inet Rpath Getpw Unveil].unwrap();
-  
+
     let webpath = "./static/";
-  
+
     unveil(webpath, "r")
       .or_else(unveil::Error::ignore_platform)
       .unwrap();
 
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
-
-    rustls::crypto::aws_lc_rs::default_provider()
-        .install_default()
-        .unwrap();
 
     let (reload_tx, mut reload_rx) = mpsc::channel(1);
 
@@ -56,24 +57,38 @@ async fn main() -> eyre::Result<()> {
         .unwrap();
 
     file_watcher
-        .watch(Path::new("cert.pem"), RecursiveMode::NonRecursive)
-        .unwrap();
+      .watch(Path::new("cert.pem"), RecursiveMode::NonRecursive)
+      .unwrap();
     file_watcher
-        .watch(Path::new("key.pem"), RecursiveMode::NonRecursive)
-        .unwrap();
+      .watch(Path::new("key.pem"), RecursiveMode::NonRecursive)
+      .unwrap();
 
-    log::info!("starting morphobsd with rustls on 3443");
-  
+    log::info!("starting morphobsd with libressl on 3443");
+
     loop {
-        let config = load_rustls_config()?;
-    
+
+        let certpath = "./cert.pem";
+        let keypath = "./key.pem";
+
+        unveil(certpath, "r")
+          .or_else(unveil::Error::ignore_platform)
+          .unwrap();
+        unveil(keypath, "r")
+          .or_else(unveil::Error::ignore_platform)
+          .unwrap();
+
+        let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+
+        builder.set_private_key(&load_encrypted_private_key()).unwrap();
+        builder.set_certificate_chain_file("cert.pem").unwrap();
+
         let mut server = HttpServer::new(|| {
             App::new()
                 .service(web::resource("/").to(index))
                 .wrap(middleware::Logger::default())
         })
         .workers(2)
-        .bind_rustls_0_23("0.0.0.0:3443", config)?
+        .bind_openssl("0.0.0.0:3443", builder)?
         .run();
 
         let server_hnd = server.handle();
@@ -97,10 +112,10 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
-fn load_rustls_config() -> eyre::Result<rustls::ServerConfig> {
+fn load_encrypted_private_key() -> PKey<Private> {
     let certpath = "./cert.pem";
     let keypath = "./key.pem";
-  
+
     unveil(certpath, "r")
       .or_else(unveil::Error::ignore_platform)
       .unwrap();
@@ -108,14 +123,10 @@ fn load_rustls_config() -> eyre::Result<rustls::ServerConfig> {
       .or_else(unveil::Error::ignore_platform)
       .unwrap();
 
-    let cert_chain = CertificateDer::pem_file_iter(certpath)
-      .unwrap()
-      .flatten()
-      .collect();
 
-    let key_der = PrivateKeyDer::from_pem_file(keypath).expect("Could not locate PKCS 8 private keys.");
+    let mut file = File::open("key.pem").unwrap();
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).expect("Failed to read file");
 
-    Ok(ServerConfig::builder()
-      .with_no_client_auth()
-      .with_single_cert(cert_chain, key_der)?)
+    PKey::private_key_from_pem_passphrase(&buffer, b"password").unwrap()
 }
