@@ -83,7 +83,7 @@ async fn main() -> eyre::Result<()> {
 
     loop {
 
-        let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
+        let mut builder = SslAcceptor::mozilla_modern(SslMethod::tls()).unwrap();
 
         builder.set_private_key(&load_encrypted_private_key()).unwrap();
         builder.set_certificate_chain_file("/opt/morpho/cert.pem").unwrap();
