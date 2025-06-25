@@ -6,7 +6,7 @@ resource "vultr_ssh_key" "enre" {
 resource "vultr_instance" "lb1" {
     hostname = "lb1"
     plan = "vc2-1c-1gb"
-    region = "ord"
+    region = "atl"
     os_id = 2573
     ssh_key_ids = ["${vultr_ssh_key.enre.id}"]
     label = "lb1"
@@ -28,7 +28,7 @@ resource "vultr_instance" "lb2" {
 resource "vultr_instance" "wb1" {
     hostname = "wb1"
     plan = "vc2-1c-1gb"
-    region = "ord"
+    region = "atl"
     os_id = 2573
     ssh_key_ids = ["${vultr_ssh_key.enre.id}"]
     label = "wb1"
