@@ -1,5 +1,6 @@
+resource "vultr_vpc" "main_vpc" {
   description = "Web Zone"
-  region = "ord"
+  region = "atl"
   v4_subnet = "10.100.0.0"
   v4_subnet_mask = "16"
 }
