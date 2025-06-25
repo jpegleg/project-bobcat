@@ -10,7 +10,7 @@ The ciphers are set in the program at compile time, currently coded for "modern_
 
 #### terraform
 
-There is a directory named `terraform` that deploys 4 servers small shared servers to two Vultr datacenters. Default is Chicago and Atlanta.
+There is a directory named `terraform` that deploys 4 servers small shared servers to one Vultr datacenter. Default is Atlanta. Add a second group to another DC for DC failover.
 
 There are two load balancers and two web servers, with some networking rules to limit access. Further network restriction is done with `pf`.
 
