@@ -1,5 +1,5 @@
 global
-    maxconn 1024
+    maxconn 190000
     user _haproxy
     group _haproxy
     daemon
@@ -13,5 +13,5 @@ global
     bind *:443
     mode tcp
     balance roundrobin
-    server node1 192.168.1.X:3443 maxconn 1023 check port 3443
-    server node2 192.168.1.Y:3443 maxconn 1023 check port 3443
+    server node1 192.168.1.X:3443 maxconn 90000 check port 3443
+    server node2 192.168.1.Y:3443 maxconn 90000 check port 3443
