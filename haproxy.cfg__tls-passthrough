@@ -1,5 +1,5 @@
 global
-    maxconn 190000
+    maxconn 39000
     user _haproxy
     group _haproxy
     daemon
