@@ -5,7 +5,7 @@
 
   - name: copy out kia
     copy:
-      src: files/kia
+      src: files/kia.j2
       dest: /usr/local/sbin/kia
 
   - name: copy out kiaproxybsd
