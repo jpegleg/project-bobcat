@@ -3,23 +3,21 @@
   hosts: lb
   tasks:
 
-  - name: install haproxy
-    shell: pkg_add haproxy
-    args:
-      executable: /bin/ksh
-    tags: haproxy
-
-  - name: enable haproxy
-    shell: rcctl enable haproxy
-    args:
-      executable: /bin/ksh
-    tags: haproxy
-
-  - name: copy out haproxy config
+  - name: copy out kia
     copy:
-      src: files/haproxy.cfg_prod
-      dest: /etc/haproxy/haproxy.cfg
+      src: files/kia
+      dest: /usr/local/sbin/kia
 
+  - name: copy out kiaproxybsd
+    copy:
+      src: files/kiaproxybsd
+      dest: /root/kiaproxybsd
+      
+  - name: copy out setup script for kia
+    copy:
+      src: files/setup_kia.ksh
+      dest: /root/setup_kia.ksh
+      
   - name: copy out load balancer pf config
     copy:
       src: files/pf.conf__lb
