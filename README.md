@@ -18,7 +18,7 @@ There are two load balancers and two web servers, with some networking rules to 
 
 #### ansible
 
-There is a directory named `ansible` that has an Ansible playbook for configuring the servers. Before running the playbook, compile `morphobsd` (morpho-server binary compiled for OpenBSD), compile `kiaproxybsd` (kiaproxy binary compiled for OpenBSD), and place the binaries in a directory named `file`s. Additionally, copy the file `morpho` into `files` and `kia` into `files`. We also need `pf.conf` files as `pf.conf__lb` and `pf.conf__compute` in `files`.
+There is a directory named `ansible` that has an Ansible playbook for configuring the servers. Before running the playbook, compile `morphobsd` (morpho-server binary compiled for OpenBSD), compile `kiaproxybsd` (kiaproxy binary compiled for OpenBSD), and place the binaries in a directory named `file`s. Additionally, copy the file `morpho` into `files` and `kia.j2` into `files`. We also need `pf.conf` files as `pf.conf__lb` and `pf.conf__compute` in `files`.
 
 The ansible is a WIP, more to come soon.
 
