@@ -45,7 +45,7 @@
 
   - name: copy out setup script
     copy:
-      src: files/setup.ksh
-      dest: /root/setup.ksh
+      src: files/setup_morph.ksh
+      dest: /root/setup_morph.ksh
 
 # More coming soon!
