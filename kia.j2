@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+CMDZ="$1"
+if [ "$CMDZ" == "start" ]; then
+  pgrep kiaproxybsd || cd /root/ && export LISTENER=0.0.0.0:443 && export SERVERS={{ groups['wb'] | map('regex_replace', '$', ':3443') | join(',') }} && /root/kiaproxybsd &
+fi
+if [ "$CMDZ" == "restart" ]; then
+  pgrep kiaproxybsd | xargs kill -9 &&
+  cd /root/ && export LISTENER=0.0.0.0:443 && export SERVERS={{ groups['wb'] | map('regex_replace', '$', ':3443') | join(',') }} && /root/kiaproxybsd &
+fi
+if [ "$CMDZ" == "stop" ]; then
+  pgrep kiaproxybsd | xargs kill -9 
+fi
