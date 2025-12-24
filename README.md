@@ -10,6 +10,10 @@ The ciphers are set in the program at compile time, currently coded for "modern_
 The load balancer is made with Tokio, and uses extremely efficient async-io, an ordered "first up", and bidirectional streaming. The environment variabes set in the `kia` script determine the listener
 and the backend targets. All traffic will be routed to the first web server unless it is down. If it is down, traffic will go to the second web server.
 
+
+<b>Important note for running kiaproxy on OpenBSD:</b> The file limits (the important default to change is defined in /etc/login.conf) should be raised from the OpenBSD defaults for the load balancer nodes that run kiaproxy,
+otherwise a DoS condition is possible. The other limit on OpenBSD is from (sysctl kern.maxfiles), which is the global limit that is usually more reasonable. I would ensure kiaproxy can get over 4,000 files, and wouldn't feel bad about going higher, especially if internet facing.
+
 #### terraform
 
 There is a directory named `terraform` that deploys 4 servers small shared servers to one Vultr datacenter. Default is Atlanta. Add a second group to another DC for DC failover.
